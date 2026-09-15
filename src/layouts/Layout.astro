@@ -1,69 +1,125 @@
 ---
 export interface Props {
-  title?: string;
-  description?: string;
-  hideFooter?: boolean;
-  // Pages with their own full-bleed background before the footer (e.g. Ontology/Sources' bone
-  // background) pass '0' here and add the equivalent spacing to their own backgrounded wrapper
-  // instead — otherwise this margin sits outside that wrapper and shows the plain page
-  // background through it as a stray gap right above the footer.
-  footerMarginTop?: string;
+    title?: string;
+    description?: string;
+    hideFooter?: boolean;
+    // Pages with their own full-bleed background before the footer (e.g. Ontology/Sources' bone
+    // background) pass '0' here and add the equivalent spacing to their own backgrounded wrapper
+    // instead — otherwise this margin sits outside that wrapper and shows the plain page
+    // background through it as a stray gap right above the footer.
+    footerMarginTop?: string;
 }
-const { title, description, hideFooter = false, footerMarginTop = '4rem' } = Astro.props;
-const siteTitle = 'Bioregioning Earth';
+const {
+    title,
+    description,
+    hideFooter = false,
+    footerMarginTop = "4rem",
+} = Astro.props;
+const siteTitle = "Bioregioning Earth";
+
+// GoatCounter (cookieless, privacy-friendly analytics — see GitHub discussion 2026-09-15).
+// Site code for https://motiu.goatcounter.com, created 2026-09-15.
+// Note: this <script> is emitted unconditionally because Astro's compiler hoists/drops
+// <script> elements inside conditional expressions.
+const GOATCOUNTER_DOMAIN = "motiu";
 const pageTitle = title ? `${title} — ${siteTitle}` : siteTitle;
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 // Active-page highlighting (Work Item B) — computed here via route-prefix matching rather than
 // threading a `current` prop through every page (refibcn's Nav.astro pattern): the
 // "Organizations" link points at `/`, not `/organizations`, so prefix-matching is needed
 // either way, and doing it once here avoids touching ~6 page files for the same result.
-const path = Astro.url.pathname.replace(base, '/').replace(/\/+/g, '/');
+const path = Astro.url.pathname.replace(base, "/").replace(/\/+/g, "/");
 const navItems = [
-  { href: `${base}/`, label: 'Organizations', match: (p: string) => p === '/' || p.startsWith('/organizations') },
-  { href: `${base}/ontology`, label: 'Ontology', match: (p: string) => p.startsWith('/ontology') },
-  { href: `${base}/sources`, label: 'Sources', match: (p: string) => p.startsWith('/sources') },
-  { href: `${base}/how-to-explore`, label: 'How to Explore', match: (p: string) => p.startsWith('/how-to-explore') },
-  { href: `${base}/about`, label: 'About', match: (p: string) => p.startsWith('/about') },
+    {
+        href: `${base}/`,
+        label: "Organizations",
+        match: (p: string) => p === "/" || p.startsWith("/organizations"),
+    },
+    {
+        href: `${base}/ontology`,
+        label: "Ontology",
+        match: (p: string) => p.startsWith("/ontology"),
+    },
+    {
+        href: `${base}/sources`,
+        label: "Sources",
+        match: (p: string) => p.startsWith("/sources"),
+    },
+    {
+        href: `${base}/how-to-explore`,
+        label: "How to Explore",
+        match: (p: string) => p.startsWith("/how-to-explore"),
+    },
+    {
+        href: `${base}/about`,
+        label: "About",
+        match: (p: string) => p.startsWith("/about"),
+    },
 ];
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{pageTitle}</title>
-    {description && <meta name="description" content={description} />}
-    <link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <style is:global>
-      :root {
-        /* ReFi BCN brand resync (2026-08-11) — token names unchanged (everything below
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{pageTitle}</title>
+        {description && <meta name="description" content={description} />}
+        <link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
+            rel="stylesheet"
+        />
+        <script
+            is:inline
+            data-goatcounter={`https://${GOATCOUNTER_DOMAIN}.goatcounter.com/count`}
+            async
+            src="https://gc.zgo.at/count.js"
+        ></script>
+        <style is:global>
+            :root {
+                /* ReFi BCN brand resync (2026-08-11) — token names unchanged (everything below
            threads through inline styles across every component here), values retargeted
            to match refibcn.github.io's actual live palette
            (src/styles/themes/editorial-organic.css). This file was still on the original
            2026-06-02 three-pillar lock; refibcn relocked the pillar ramps and moved
            --primary off the flow pillar onto a dedicated --terracotta, both on 2026-08-07 —
            neither change had made it here. */
-        --paper-50: #fffdfb;   /* refibcn's --paper, relocked 2026-08-13 (was #fffffd) — one step lighter/warmer, part of a neutrals-wide relock (paper/bone/ivory) so the warmth ratio increases smoothly across the ramp */
-        --bone: #fcf8f2;       /* refibcn's --bone, relocked 2026-08-13 (was #faf8f4) — same relock as --paper-50/--paper-100 */
-        --eggshell: color-mix(in srgb, var(--paper-50) 50%, var(--bone) 50%); /* new (2026-08-14) — exactly halfway between --paper-50 and --bone, named to fit the existing paper/bone/ivory material naming. Introduced for hover states (.field-control, .filter-dropdown-option, .view-toggle-btn): a step warmer than the default paper background but a step lighter than --bone itself, so hover reads as a distinct third step rather than jumping straight to a surface color. Derived via color-mix rather than a hand-picked hex so it stays exactly centered if either endpoint relocks again. */
-        --paper-100: #fbf5ea;  /* refibcn's --ivory (surface-2), relocked 2026-08-13 (was #f8f4ed) — same relock as --paper-50/--bone */
-        --paper-200: #DDD7CF;  /* unchanged — already ~equal to refibcn's --border-subtle rendered on paper */
-        --paper-700: color-mix(in srgb, var(--paper-900) 65%, var(--paper-50) 35%); /* was a fixed #41312A (too dark to read as "muted"); now derived the same way refibcn derives --rule/--text-muted, so it tracks --paper-900/50 automatically */
-        --paper-900: #221a12;  /* was #2A1810 — refibcn's --umber */
-        --umber: var(--paper-900); /* alias for parity with refibcn's naming (2026-08-12 design-alignment pass) — prefer this in new code, --paper-900 stays valid for existing call sites */
+                --paper-50: #fffdfb; /* refibcn's --paper, relocked 2026-08-13 (was #fffffd) — one step lighter/warmer, part of a neutrals-wide relock (paper/bone/ivory) so the warmth ratio increases smoothly across the ramp */
+                --bone: #fcf8f2; /* refibcn's --bone, relocked 2026-08-13 (was #faf8f4) — same relock as --paper-50/--paper-100 */
+                --eggshell: color-mix(
+                    in srgb,
+                    var(--paper-50) 50%,
+                    var(--bone) 50%
+                ); /* new (2026-08-14) — exactly halfway between --paper-50 and --bone, named to fit the existing paper/bone/ivory material naming. Introduced for hover states (.field-control, .filter-dropdown-option, .view-toggle-btn): a step warmer than the default paper background but a step lighter than --bone itself, so hover reads as a distinct third step rather than jumping straight to a surface color. Derived via color-mix rather than a hand-picked hex so it stays exactly centered if either endpoint relocks again. */
+                --paper-100: #fbf5ea; /* refibcn's --ivory (surface-2), relocked 2026-08-13 (was #f8f4ed) — same relock as --paper-50/--bone */
+                --paper-200: #ddd7cf; /* unchanged — already ~equal to refibcn's --border-subtle rendered on paper */
+                --paper-700: color-mix(
+                    in srgb,
+                    var(--paper-900) 65%,
+                    var(--paper-50) 35%
+                ); /* was a fixed #41312A (too dark to read as "muted"); now derived the same way refibcn derives --rule/--text-muted, so it tracks --paper-900/50 automatically */
+                --paper-900: #221a12; /* was #2A1810 — refibcn's --umber */
+                --umber: var(
+                    --paper-900
+                ); /* alias for parity with refibcn's naming (2026-08-12 design-alignment pass) — prefer this in new code, --paper-900 stays valid for existing call sites */
 
-        --terracotta: #D12B00; /* refibcn's brand primary anchor (2026-08-07) — didn't exist here before */
+                --terracotta: #d12b00; /* refibcn's brand primary anchor (2026-08-07) — didn't exist here before */
 
-        --pillar-neural-1: #4DEFFF; --pillar-neural-4: #0055FF; --pillar-neural-6: #000FA0;
-        --pillar-tissue-1: #D9FF4A; --pillar-tissue-4: #6DBF23; --pillar-tissue-6: #2C5A0D;
-        --pillar-flow-1: #FFBB26;   --pillar-flow-4: #FF5500;   --pillar-flow-6: #8A2200;
+                --pillar-neural-1: #4defff;
+                --pillar-neural-4: #0055ff;
+                --pillar-neural-6: #000fa0;
+                --pillar-tissue-1: #d9ff4a;
+                --pillar-tissue-4: #6dbf23;
+                --pillar-tissue-6: #2c5a0d;
+                --pillar-flow-1: #ffbb26;
+                --pillar-flow-4: #ff5500;
+                --pillar-flow-6: #8a2200;
 
-        /* Categorical tones (2026-08-12) — for badges that need color but aren't pillar-tagged
+                /* Categorical tones (2026-08-12) — for badges that need color but aren't pillar-tagged
            (org type/category). Deliberately NOT drawn from the pillar families (lime/cyan/orange)
            so a category badge never reads as a pillar badge. Same Color Library refibcn.github.io
            uses, Purple/Pink/Blue families this time, at the same Soft/Dark/Shade steps.
@@ -73,33 +129,91 @@ const navItems = [
            background step moved, same as refibcn's relock left its "dark" step alone. Referencing
            --lib-*-2 here instead of a new literal so this stays visibly tied to "one step lighter
            than -3/Soft" rather than an arbitrary new hex. */
-        --tone-purple-1: var(--lib-purple-2); --tone-purple-4: #750FCC; --tone-purple-6: #3D0870;
-        --tone-pink-1: var(--lib-pink-2);     --tone-pink-4: #C40074;   --tone-pink-6: #6E0040;
-        --tone-blue-1: var(--lib-blue-2);     --tone-blue-4: #3A3AC0;   --tone-blue-6: #1F1D80;
-        /* Green (2026-08-14) — added as a 4th categorical tone for the ontology page's
+                --tone-purple-1: var(--lib-purple-2);
+                --tone-purple-4: #750fcc;
+                --tone-purple-6: #3d0870;
+                --tone-pink-1: var(--lib-pink-2);
+                --tone-pink-4: #c40074;
+                --tone-pink-6: #6e0040;
+                --tone-blue-1: var(--lib-blue-2);
+                --tone-blue-4: #3a3ac0;
+                --tone-blue-6: #1f1d80;
+                /* Green (2026-08-14) — added as a 4th categorical tone for the ontology page's
            "Bioregional Economies" category specifically, so it reads distinctly from the
            Network Coordination pillar badge (which is lime, an adjacent-but-different hue
            family) instead of both landing in the same "green" family. */
-        --tone-green-1: var(--lib-green-2);   --tone-green-4: #00804A;  --tone-green-6: #00502E;
+                --tone-green-1: var(--lib-green-2);
+                --tone-green-4: #00804a;
+                --tone-green-6: #00502e;
 
-        /* Full Color Library (refibcn.github.io's design-system/colors.astro, 2026-08-07) — 10
+                /* Full Color Library (refibcn.github.io's design-system/colors.astro, 2026-08-07) — 10
            hue families, 6 fixed steps each (1=Tint … 6=Shade), literal chosen hexes not derived
            from a tint/shade formula. The --pillar- and --tone- tokens above are a legacy partial
            port of only 6 of these 10 families at non-sequential step numbers (predating this
            fuller port, and kept as-is since other code already depends on their exact names) —
            new code should draw from this instead, since it's the complete set. */
-        --lib-red-1: #FFE0E0;    --lib-red-2: #FFA8A8;    --lib-red-3: #FF4D4D;    --lib-red-4: #E60000;    --lib-red-5: #A30000;    --lib-red-6: #5C0000;
-        --lib-orange-1: #FFECB0; --lib-orange-2: #FFD27B; --lib-orange-3: #FFBB26; --lib-orange-4: #FF7A00; --lib-orange-5: #FF5500; --lib-orange-6: #8A2200;
-        --lib-yellow-1: #FFFBD1; --lib-yellow-2: #FFF67A; --lib-yellow-3: #FFEE00; --lib-yellow-4: #E6D400; --lib-yellow-5: #A69900; --lib-yellow-6: #5C5400;
-        --lib-lime-1: #EFFFB8;   --lib-lime-2: #DFFF80;   --lib-lime-3: #D9FF4A;   --lib-lime-4: #8FE84A;   --lib-lime-5: #6DBF23;   --lib-lime-6: #2C5A0D;
-        --lib-green-1: #D6FFEA;  --lib-green-2: #94FFC7;  --lib-green-3: #33E894;  --lib-green-4: #00B86B;  --lib-green-5: #00804A;  --lib-green-6: #00502E;
-        --lib-cyan-1: #C9F7FF;   --lib-cyan-2: #96F3FF;   --lib-cyan-3: #4DEFFF;   --lib-cyan-4: #00AEFF;   --lib-cyan-5: #0055FF;   --lib-cyan-6: #000FA0;
-        --lib-blue-1: #E8EAFF;   --lib-blue-2: #C2C8FF;   --lib-blue-3: #8F97FF;   --lib-blue-4: #5B62F0;   --lib-blue-5: #3A3AC0;   --lib-blue-6: #1F1D80;
-        --lib-purple-1: #F5E1FF; --lib-purple-2: #E5BBFF; --lib-purple-3: #CE7AFF; --lib-purple-4: #A62FFF; --lib-purple-5: #750FCC; --lib-purple-6: #3D0870;
-        --lib-pink-1: #FFE0F2;   --lib-pink-2: #FFB0DE;   --lib-pink-3: #FF5FB8;   --lib-pink-4: #FF1E9C;   --lib-pink-5: #C40074;   --lib-pink-6: #6E0040;
-        --lib-gray-1: #F4F4F2;   --lib-gray-2: #E3E3DF;   --lib-gray-3: #C9C9C3;   --lib-gray-4: #9C9C94;   --lib-gray-5: #6B6B63;   --lib-gray-6: #3A3A34;
+                --lib-red-1: #ffe0e0;
+                --lib-red-2: #ffa8a8;
+                --lib-red-3: #ff4d4d;
+                --lib-red-4: #e60000;
+                --lib-red-5: #a30000;
+                --lib-red-6: #5c0000;
+                --lib-orange-1: #ffecb0;
+                --lib-orange-2: #ffd27b;
+                --lib-orange-3: #ffbb26;
+                --lib-orange-4: #ff7a00;
+                --lib-orange-5: #ff5500;
+                --lib-orange-6: #8a2200;
+                --lib-yellow-1: #fffbd1;
+                --lib-yellow-2: #fff67a;
+                --lib-yellow-3: #ffee00;
+                --lib-yellow-4: #e6d400;
+                --lib-yellow-5: #a69900;
+                --lib-yellow-6: #5c5400;
+                --lib-lime-1: #efffb8;
+                --lib-lime-2: #dfff80;
+                --lib-lime-3: #d9ff4a;
+                --lib-lime-4: #8fe84a;
+                --lib-lime-5: #6dbf23;
+                --lib-lime-6: #2c5a0d;
+                --lib-green-1: #d6ffea;
+                --lib-green-2: #94ffc7;
+                --lib-green-3: #33e894;
+                --lib-green-4: #00b86b;
+                --lib-green-5: #00804a;
+                --lib-green-6: #00502e;
+                --lib-cyan-1: #c9f7ff;
+                --lib-cyan-2: #96f3ff;
+                --lib-cyan-3: #4defff;
+                --lib-cyan-4: #00aeff;
+                --lib-cyan-5: #0055ff;
+                --lib-cyan-6: #000fa0;
+                --lib-blue-1: #e8eaff;
+                --lib-blue-2: #c2c8ff;
+                --lib-blue-3: #8f97ff;
+                --lib-blue-4: #5b62f0;
+                --lib-blue-5: #3a3ac0;
+                --lib-blue-6: #1f1d80;
+                --lib-purple-1: #f5e1ff;
+                --lib-purple-2: #e5bbff;
+                --lib-purple-3: #ce7aff;
+                --lib-purple-4: #a62fff;
+                --lib-purple-5: #750fcc;
+                --lib-purple-6: #3d0870;
+                --lib-pink-1: #ffe0f2;
+                --lib-pink-2: #ffb0de;
+                --lib-pink-3: #ff5fb8;
+                --lib-pink-4: #ff1e9c;
+                --lib-pink-5: #c40074;
+                --lib-pink-6: #6e0040;
+                --lib-gray-1: #f4f4f2;
+                --lib-gray-2: #e3e3df;
+                --lib-gray-3: #c9c9c3;
+                --lib-gray-4: #9c9c94;
+                --lib-gray-5: #6b6b63;
+                --lib-gray-6: #3a3a34;
 
-        /* Map marker glow colors, drawn from the full 10-family library above. Both categories
+                /* Map marker glow colors, drawn from the full 10-family library above. Both categories
            are one uniform color each (not a per-org palette, one glow color for every org
            regardless of its Type) — standard (non-case-study) markers use the same purple the
            "Bioregional Organizer" badge uses (--lib-purple-5, identical value to the existing
@@ -108,104 +222,148 @@ const navItems = [
            (.case-study-dot below) both use yellow — was lime until 2026-08-14, moved off it once
            the ontology page's Network Coordination pillar badge (also lime) started appearing on
            the same surfaces, which read as the same color for two unrelated meanings. */
-        --map-marker-standard: var(--lib-purple-5);
-        --map-marker-case-study: var(--lib-yellow-3);
+                --map-marker-standard: var(--lib-purple-5);
+                --map-marker-case-study: var(--lib-yellow-3);
 
-        --bg: var(--paper-50);
-        --surface: var(--paper-100);
-        --card: var(--paper-50);                                               /* was a literal #FFFFFF — pure white isn't in the brand at all; refibcn's own "paper" neutral (which this token already aliases) is #fffffd, warm off-white, and that's what every surface should resolve to instead */
-        --border: var(--paper-200);
-        --fg: var(--paper-900);
-        --muted: var(--paper-700);
-        --primary: var(--lib-lime-6);                                          /* was --terracotta (2026-08-14) — user-requested move to "pillar tissue 4" in refibcn's current (post-relock) 1-4 numbering, i.e. the tissue/lime family's Shade step, #2C5A0D — bioregioning-earth-ui's own legacy --pillar-tissue-4 (#6DBF23) is a *different* step under this repo's separate, un-relocked numbering, so --lib-lime-6 (the raw Shade hex, unambiguous either way) is used directly instead */
-        --primary-hover: color-mix(in srgb, var(--lib-lime-6) 82%, black 18%);
-        --primary-fg: var(--paper-50);                                         /* was a literal #FFFFFF — refibcn's own --btn-primary-fg resolves to var(--paper), not white, even for text on dark/primary buttons; matching that instead of inventing a pure-white text color the brand doesn't use */
-        --accent: var(--pillar-neural-1);
-        --accent-fg: var(--pillar-neural-6);
-        --success: var(--pillar-tissue-6);  /* was a standalone #214033 — refibcn derives success from tissue-dark */
-        --warning: var(--pillar-flow-1);    /* new — refibcn derives warning from flow-light; wasn't defined here at all */
-        --danger: #7A2618;                  /* new — refibcn's fixed brick red, distinct from primary; wasn't defined here at all */
-        --info: var(--pillar-neural-4);     /* was a standalone #598FFD — refibcn derives info from neural-mid */
+                --bg: var(--paper-50);
+                --surface: var(--paper-100);
+                --card: var(
+                    --paper-50
+                ); /* was a literal #FFFFFF — pure white isn't in the brand at all; refibcn's own "paper" neutral (which this token already aliases) is #fffffd, warm off-white, and that's what every surface should resolve to instead */
+                --border: var(--paper-200);
+                --fg: var(--paper-900);
+                --muted: var(--paper-700);
+                --primary: var(
+                    --lib-lime-6
+                ); /* was --terracotta (2026-08-14) — user-requested move to "pillar tissue 4" in refibcn's current (post-relock) 1-4 numbering, i.e. the tissue/lime family's Shade step, #2C5A0D — bioregioning-earth-ui's own legacy --pillar-tissue-4 (#6DBF23) is a *different* step under this repo's separate, un-relocked numbering, so --lib-lime-6 (the raw Shade hex, unambiguous either way) is used directly instead */
+                --primary-hover: color-mix(
+                    in srgb,
+                    var(--lib-lime-6) 82%,
+                    black 18%
+                );
+                --primary-fg: var(
+                    --paper-50
+                ); /* was a literal #FFFFFF — refibcn's own --btn-primary-fg resolves to var(--paper), not white, even for text on dark/primary buttons; matching that instead of inventing a pure-white text color the brand doesn't use */
+                --accent: var(--pillar-neural-1);
+                --accent-fg: var(--pillar-neural-6);
+                --success: var(
+                    --pillar-tissue-6
+                ); /* was a standalone #214033 — refibcn derives success from tissue-dark */
+                --warning: var(
+                    --pillar-flow-1
+                ); /* new — refibcn derives warning from flow-light; wasn't defined here at all */
+                --danger: #7a2618; /* new — refibcn's fixed brick red, distinct from primary; wasn't defined here at all */
+                --info: var(
+                    --pillar-neural-4
+                ); /* was a standalone #598FFD — refibcn derives info from neural-mid */
 
-        --radius: 0.5rem;
-        --radius-sm: 0.25rem;
-        --radius-pill: 9999px;
-        --max-w: 1280px;
+                --radius: 0.5rem;
+                --radius-sm: 0.25rem;
+                --radius-pill: 9999px;
+                --max-w: 1280px;
 
-        --sans: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
-        --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace; /* briefly changed to IBM Plex Mono during the 2026-08-11 resync, matching what refibcn.github.io had at the time — refibcn corrected that same day (IBM Plex Mono → Geist Mono), so this reverts to match */
-        /* No --serif token — Averia is ReFi BCN's own display face (refibcn.github.io and other
+                --sans:
+                    "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+                --mono:
+                    "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace; /* briefly changed to IBM Plex Mono during the 2026-08-11 resync, matching what refibcn.github.io had at the time — refibcn corrected that same day (IBM Plex Mono → Geist Mono), so this reverts to match */
+                /* No --serif token — Averia is ReFi BCN's own display face (refibcn.github.io and other
            surfaces the org owns), not something client/partner surfaces inherit. This site isn't
            refibcn-owned, so it doesn't get the display face at all, not even for hero/page-opening
            headings the way refibcn's own site uses it — those just stay --sans here. See
            refibcn.github.io's Typography page for the rule this follows. */
-      }
-      * { box-sizing: border-box; }
-      html, body {
-        margin: 0;
-        padding: 0;
-        background: var(--bg);
-        color: var(--fg);
-        font-family: var(--sans);
-        line-height: 1.55;
-        /* Defense-in-depth against any fixed/min-width element pushing the page wider than the
+            }
+            * {
+                box-sizing: border-box;
+            }
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+                background: var(--bg);
+                color: var(--fg);
+                font-family: var(--sans);
+                line-height: 1.55;
+                /* Defense-in-depth against any fixed/min-width element pushing the page wider than the
            viewport on mobile (the direct cause, a minmax(240px,…) ontology grid with no mobile
            override, is fixed at its source in OntologyDetail.astro) — this just guarantees a
            stray future one can't reintroduce page-level horizontal scroll. */
-        overflow-x: hidden;
-      }
-      a { color: var(--primary); text-decoration: none; }
-      a:hover { text-decoration: underline; }
-      ::selection { background: var(--accent); color: var(--fg); }
+                overflow-x: hidden;
+            }
+            a {
+                color: var(--primary);
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            ::selection {
+                background: var(--accent);
+                color: var(--fg);
+            }
 
-      /* Nav active-state (Work Item B) — matches refibcn.github.io's Nav.astro treatment:
+            /* Nav active-state (Work Item B) — matches refibcn.github.io's Nav.astro treatment:
          color shift to umber + a bottom border, no weight change. Active and hover read the
          same, same as the source-of-truth pattern. */
-      .nav-link { color: var(--muted); text-decoration: none; border-bottom: 1px solid transparent; padding-bottom: 2px; }
-      .nav-link:hover, .nav-link.active { color: var(--umber); border-bottom-color: var(--umber); text-decoration: none; }
+            .nav-link {
+                color: var(--muted);
+                text-decoration: none;
+                border-bottom: 1px solid transparent;
+                padding-bottom: 2px;
+            }
+            .nav-link:hover,
+            .nav-link.active {
+                color: var(--umber);
+                border-bottom-color: var(--umber);
+                text-decoration: none;
+            }
 
-      /* Shared filter-control pattern (moved here from OrganizationsGallery.astro's scoped
+            /* Shared filter-control pattern (moved here from OrganizationsGallery.astro's scoped
          style so OntologyDetail.astro's Activities filters can reuse it too — square,
          umber-toned border, terracotta focus ring, explicit height since <input>/<select>/
          <button> each resolve padding+line-height to a different intrinsic height under their
          own UA defaults). */
-      .field-control {
-        height: 2.25rem;
-        box-sizing: border-box;
-        display: inline-flex;
-        align-items: center;
-        padding: 0 0.75rem;
-        border: 1px solid color-mix(in srgb, var(--umber) 30%, transparent);
-        border-radius: 0;
-        background: var(--paper-50);
-        color: var(--fg);
-        font-family: var(--sans);
-        font-size: 0.85rem;
-      }
-      .field-control:focus-visible {
-        outline: 2px solid var(--primary);
-        border-color: var(--primary);
-      }
-      /* Hover state (2026-08-14) — every .field-control is clickable (search input aside, which
+            .field-control {
+                height: 2.25rem;
+                box-sizing: border-box;
+                display: inline-flex;
+                align-items: center;
+                padding: 0 0.75rem;
+                border: 1px solid
+                    color-mix(in srgb, var(--umber) 30%, transparent);
+                border-radius: 0;
+                background: var(--paper-50);
+                color: var(--fg);
+                font-family: var(--sans);
+                font-size: 0.85rem;
+            }
+            .field-control:focus-visible {
+                outline: 2px solid var(--primary);
+                border-color: var(--primary);
+            }
+            /* Hover state (2026-08-14) — every .field-control is clickable (search input aside, which
          still gets the same treatment for consistency) but none of them changed on hover, so
          nothing signaled that up front. Deliberately a plain border/background shift, not the
          --primary treatment — that's reserved for :focus-visible and the "this filter has an
          active selection" state below, so hover doesn't read as either of those. */
-      .field-control:hover {
-        border-color: color-mix(in srgb, var(--umber) 55%, transparent);
-        background: var(--eggshell);
-      }
-      /* "This filter has a selection" state (2026-08-14) — toggled via JS (classList.toggle)
+            .field-control:hover {
+                border-color: color-mix(in srgb, var(--umber) 55%, transparent);
+                background: var(--eggshell);
+            }
+            /* "This filter has a selection" state (2026-08-14) — toggled via JS (classList.toggle)
          alongside the existing count-label / selected-category-label updates in
          OrganizationsGallery.astro and OntologyDetail.astro, since those already compute exactly
          this condition. Distinct from :hover/:focus-visible so a filter with something selected
          stays visually marked even when the pointer moves away. */
-      .field-control--active {
-        border-color: var(--primary);
-        background: color-mix(in srgb, var(--primary) 8%, var(--paper-50));
-        color: var(--primary);
-      }
-      /* Trailing dropdown-indicator arrow for .field-control buttons that open a .filter-dropdown
+            .field-control--active {
+                border-color: var(--primary);
+                background: color-mix(
+                    in srgb,
+                    var(--primary) 8%,
+                    var(--paper-50)
+                );
+                color: var(--primary);
+            }
+            /* Trailing dropdown-indicator arrow for .field-control buttons that open a .filter-dropdown
          (Category/Tags in OrganizationsGallery.astro, Tags/Organizations in OntologyDetail.astro)
          — added 2026-08-14; these used to have no indicator at all that they were dropdowns
          rather than plain buttons (the comment on the old native-<select>-replacement said the
@@ -214,106 +372,111 @@ const navItems = [
          0.85rem label text) — 1.1em instead, close to full text size rather than a faint hint of
          one. Not applied to every .field-control — the search input and "Reset" button use the
          same class but aren't dropdown triggers. */
-      .field-control-arrow {
-        margin-left: 0.5rem;
-        font-size: 1.1em;
-        color: var(--muted);
-        flex-shrink: 0;
-      }
-      .filter-dropdown {
-        display: none;
-        position: absolute;
-        top: calc(100% + 0.25rem);
-        left: 0;
-        /* min-width:100% keeps it at least as wide as its trigger button, but the trigger is
+            .field-control-arrow {
+                margin-left: 0.5rem;
+                font-size: 1.1em;
+                color: var(--muted);
+                flex-shrink: 0;
+            }
+            .filter-dropdown {
+                display: none;
+                position: absolute;
+                top: calc(100% + 0.25rem);
+                left: 0;
+                /* min-width:100% keeps it at least as wide as its trigger button, but the trigger is
            often just "Tags"/"Organizations" — far narrower than option labels like "Findhorn
            Watershed Initiative" — so it needs room to grow past that, capped so it doesn't run
            off-screen. */
-        width: max-content;
-        min-width: 100%;
-        /* Clamped to the viewport (minus roughly a page-padding's worth of margin either side) so
+                width: max-content;
+                min-width: 100%;
+                /* Clamped to the viewport (minus roughly a page-padding's worth of margin either side) so
            this can't overflow off the right edge on very narrow phones (~320-360px) — the plain
            320px cap alone assumed enough room past the trigger button, which isn't always true
            there. */
-        max-width: min(320px, calc(100vw - 3rem));
-        z-index: 30;
-        max-height: 280px;
-        overflow-y: auto;
-        background: var(--card);
-        border: 1px solid color-mix(in srgb, var(--umber) 30%, transparent);
-        padding: 0.5rem;
-        box-shadow: 0 4px 16px rgba(42, 24, 16, 0.15);
-      }
-      .filter-dropdown-option {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.3rem 0.25rem;
-        font-size: 0.8rem;
-        color: var(--fg);
-        cursor: pointer;
-      }
-      .filter-dropdown-option:hover {
-        background: var(--eggshell);
-      }
-      /* Checked-option highlight (2026-08-14) — a checked box/radio read almost the same as an
+                max-width: min(320px, calc(100vw - 3rem));
+                z-index: 30;
+                max-height: 280px;
+                overflow-y: auto;
+                background: var(--card);
+                border: 1px solid
+                    color-mix(in srgb, var(--umber) 30%, transparent);
+                padding: 0.5rem;
+                box-shadow: 0 4px 16px rgba(42, 24, 16, 0.15);
+            }
+            .filter-dropdown-option {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.3rem 0.25rem;
+                font-size: 0.8rem;
+                color: var(--fg);
+                cursor: pointer;
+            }
+            .filter-dropdown-option:hover {
+                background: var(--eggshell);
+            }
+            /* Checked-option highlight (2026-08-14) — a checked box/radio read almost the same as an
          unchecked one at this size (0.8rem), easy to lose track of once a few are selected. */
-      .filter-dropdown-option:has(input:checked) {
-        background: color-mix(in srgb, var(--primary) 10%, transparent);
-        color: var(--primary);
-        font-weight: 500;
-      }
+            .filter-dropdown-option:has(input:checked) {
+                background: color-mix(in srgb, var(--primary) 10%, transparent);
+                color: var(--primary);
+                font-weight: 500;
+            }
 
-      /* Hamburger nav toggle — hidden by default (desktop keeps the plain inline nav-links row);
+            /* Hamburger nav toggle — hidden by default (desktop keeps the plain inline nav-links row);
          shown only below 768px, where #nav-links itself switches from an inline flex row to a
          hidden dropdown panel that this button opens/closes (script at the bottom of this file).
          767px matches MOBILE_BREAKPOINT (768) in src/lib/viewport.ts. */
-      .nav-toggle {
-        display: none;
-        background: none;
-        border: none;
-        font-size: 1.3rem;
-        line-height: 1;
-        color: var(--fg);
-        cursor: pointer;
-        padding: 0.25rem 0.5rem;
-      }
-      @media (max-width: 767px) {
-        .nav-toggle {
-          display: inline-flex;
-        }
-        /* #nav-links carries its desktop layout (display:flex;gap:1.25rem;flex-wrap:wrap;
+            .nav-toggle {
+                display: none;
+                background: none;
+                border: none;
+                font-size: 1.3rem;
+                line-height: 1;
+                color: var(--fg);
+                cursor: pointer;
+                padding: 0.25rem 0.5rem;
+            }
+            @media (max-width: 767px) {
+                .nav-toggle {
+                    display: inline-flex;
+                }
+                /* #nav-links carries its desktop layout (display:flex;gap:1.25rem;flex-wrap:wrap;
            justify-content:flex-end;align-items:center;…) as an inline style attribute, which
            beats a plain stylesheet rule regardless of specificity — every property this override
            shares with that inline style needs !important to actually win below 768px. */
-        #nav-links {
-          display: none !important;
-          position: absolute;
-          top: 48px;
-          left: 0;
-          right: 0;
-          flex-direction: column;
-          flex-wrap: nowrap !important;
-          justify-content: flex-start !important;
-          align-items: flex-start !important;
-          gap: 0.85rem !important;
-          background: color-mix(in srgb, var(--paper-50) 96%, transparent);
-          backdrop-filter: blur(12px);
-          border-bottom: 1px solid var(--border);
-          padding: 1rem 1.5rem;
-          box-shadow: 0 8px 24px rgba(42, 24, 16, 0.1);
-        }
-        #nav-links.open {
-          display: flex !important;
-        }
-        /* The "·" separators only make sense between items sitting in a row (desktop); stacked
+                #nav-links {
+                    display: none !important;
+                    position: absolute;
+                    top: 48px;
+                    left: 0;
+                    right: 0;
+                    flex-direction: column;
+                    flex-wrap: nowrap !important;
+                    justify-content: flex-start !important;
+                    align-items: flex-start !important;
+                    gap: 0.85rem !important;
+                    background: color-mix(
+                        in srgb,
+                        var(--paper-50) 96%,
+                        transparent
+                    );
+                    backdrop-filter: blur(12px);
+                    border-bottom: 1px solid var(--border);
+                    padding: 1rem 1.5rem;
+                    box-shadow: 0 8px 24px rgba(42, 24, 16, 0.1);
+                }
+                #nav-links.open {
+                    display: flex !important;
+                }
+                /* The "·" separators only make sense between items sitting in a row (desktop); stacked
            vertically in the dropdown they just look like stray marks between links. */
-        .nav-sep {
-          display: none;
-        }
-      }
+                .nav-sep {
+                    display: none;
+                }
+            }
 
-      /* Glowing LED map marker — shared by EarthMap.astro and HomeEarthMap.astro (via
+            /* Glowing LED map marker — shared by EarthMap.astro and HomeEarthMap.astro (via
          src/lib/mapMarkerStyle.ts's createLedMarkerElement) so the two map components can't
          drift into two different marker designs the way other shared UI here already has.
          Color is set per-instance via the --marker-color custom property (standard vs. case-study)
@@ -321,51 +484,86 @@ const navItems = [
          A solid saturated core with a soft multi-step outward glow — not an off-center white
          highlight blended into the color (that read as a blemish/pimple rather than a light
          source; a real LED's brightest point is its own body, not a separate white dot on it). */
-      .map-led-marker {
-        width: 11px;
-        height: 11px;
-        border-radius: 50%;
-        cursor: pointer;
-        background: var(--marker-color);
-        box-shadow:
-          0 0 0 1px color-mix(in srgb, var(--marker-color) 60%, white 40%),
-          0 0 6px 2px var(--marker-color),
-          0 0 14px 6px color-mix(in srgb, var(--marker-color) 50%, transparent),
-          0 0 26px 12px color-mix(in srgb, var(--marker-color) 22%, transparent);
-      }
+            .map-led-marker {
+                width: 11px;
+                height: 11px;
+                border-radius: 50%;
+                cursor: pointer;
+                background: var(--marker-color);
+                box-shadow:
+                    0 0 0 1px
+                        color-mix(in srgb, var(--marker-color) 60%, white 40%),
+                    0 0 6px 2px var(--marker-color),
+                    0 0 14px 6px
+                        color-mix(in srgb, var(--marker-color) 50%, transparent),
+                    0 0 26px 12px
+                        color-mix(in srgb, var(--marker-color) 22%, transparent);
+            }
 
-      /* Small "this org is a case study" indicator dot — same yellow as the map's case-study
+            /* Small "this org is a case study" indicator dot — same yellow as the map's case-study
          markers, so the two read as the same signal wherever they appear (gallery cards, map
          hover popups, org detail). Deliberately NOT used in filter controls (e.g. the gallery's
          "Case study only" checkbox) — those are asking a question, not asserting a fact about a
          specific org, so the dot doesn't belong there. */
-      .case-study-dot {
-        display: inline-block;
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--map-marker-case-study);
-        margin-right: 0.4em;
-        vertical-align: middle;
-      }
-    </style>
-  </head>
-  <body style="display:flex;flex-direction:column;min-height:100vh;">
-    <nav style="position:sticky;top:0;z-index:50;background:color-mix(in srgb, var(--paper-50) 92%, transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);">
-      <div style="width:100%;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:48px;gap:1rem;">
-        <a href={`${base}/`} style="font-weight:500;font-size:0.95rem;color:var(--fg);white-space:nowrap;font-family:var(--sans);">{siteTitle}</a>
-        <button type="button" id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="nav-links">☰</button>
-        <div id="nav-links" style="display:flex;gap:1.25rem;flex-wrap:wrap;justify-content:flex-end;align-items:center;font-family:var(--mono);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.03em;">
-          {navItems.map((item, i) => (
-            <>
-              <a href={item.href} class:list={['nav-link', { active: item.match(path) }]}>{item.label}</a>
-              {i < navItems.length - 1 && <span class="nav-sep" style="color:var(--border);font-size:0.9rem;">·</span>}
-            </>
-          ))}
-        </div>
-      </div>
-    </nav>
-    <!-- flex:1 0 auto so this fills whatever vertical space the (flex-column) body has left
+            .case-study-dot {
+                display: inline-block;
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: var(--map-marker-case-study);
+                margin-right: 0.4em;
+                vertical-align: middle;
+            }
+        </style>
+    </head>
+    <body style="display:flex;flex-direction:column;min-height:100vh;">
+        <nav style="position:sticky;top:0;z-index:50;background:color-mix(in srgb, var(--paper-50) 92%, transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);">
+            <div style="width:100%;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:48px;gap:1rem;">
+                <a
+                    href={`${base}/`}
+                    style="font-weight:500;font-size:0.95rem;color:var(--fg);white-space:nowrap;font-family:var(--sans);"
+                >
+                    {siteTitle}
+                </a>
+                <button
+                    type="button"
+                    id="nav-toggle"
+                    class="nav-toggle"
+                    aria-label="Toggle navigation"
+                    aria-expanded="false"
+                    aria-controls="nav-links"
+                >
+                    ☰
+                </button>
+                <div
+                    id="nav-links"
+                    style="display:flex;gap:1.25rem;flex-wrap:wrap;justify-content:flex-end;align-items:center;font-family:var(--mono);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.03em;"
+                >
+                    {navItems.map((item, i) => (
+                        <>
+                            <a
+                                href={item.href}
+                                class:list={[
+                                    "nav-link",
+                                    { active: item.match(path) },
+                                ]}
+                            >
+                                {item.label}
+                            </a>
+                            {i < navItems.length - 1 && (
+                                <span
+                                    class="nav-sep"
+                                    style="color:var(--border);font-size:0.9rem;"
+                                >
+                                    ·
+                                </span>
+                            )}
+                        </>
+                    ))}
+                </div>
+            </div>
+        </nav>
+        <!-- flex:1 0 auto so this fills whatever vertical space the (flex-column) body has left
          beyond nav+footer, pushing the footer to the true bottom of the viewport on short pages
          instead of it riding up right under the content — the classic sticky-footer pattern.
          Wrapped around <slot/> rather than styling <slot/> itself since a slot isn't a real DOM
@@ -373,57 +571,82 @@ const navItems = [
          top-level element. Plain <div>, not <main> — some pages (index.astro) already render
          their own <main> as their top-level slot content, and nesting <main> inside <main> would
          be an invalid duplicate landmark. -->
-    <div style="flex:1 0 auto;">
-      <slot />
-    </div>
-    {!hideFooter && (
-      <footer style={`border-top:1px solid var(--border);margin-top:${footerMarginTop};padding:2rem 1.5rem;text-align:center;color:var(--muted);font-size:0.8rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.04em;`}>
-        <div style="max-width:var(--max-w);margin:0 auto;display:flex;flex-wrap:wrap;justify-content:center;gap:1rem;align-items:center;">
-          <a href="https://motiu.org" target="_blank" rel="noopener noreferrer" style="color:var(--muted);text-decoration:none;">Motiu</a>
-          <span style="color:var(--border);">·</span>
-          <a href="https://www.r3-0.org/" target="_blank" rel="noopener noreferrer" style="color:var(--muted);text-decoration:none;">r3.0</a>
-          <span style="color:var(--border);">·</span>
-          <a href="mailto:contact@motiu.org" style="color:var(--muted);text-decoration:none;">contact@motiu.org</a>
+        <div style="flex:1 0 auto;">
+            <slot />
         </div>
-      </footer>
-    )}
-    <script>
-      // Hamburger nav toggle (mobile only — .nav-toggle/#nav-links.open only do anything below
-      // 767px, see the CSS above). Same open/close pattern (toggle on click, close on outside
-      // click / Escape / picking an option) already used for the Category/Tags popovers in
-      // OrganizationsGallery.astro, duplicated here rather than shared since it's only a few lines
-      // and this file has no other script to extend.
-      const navToggle = document.getElementById('nav-toggle');
-      const navLinks = document.getElementById('nav-links');
+        {!hideFooter && (
+            <footer
+                style={`border-top:1px solid var(--border);margin-top:${footerMarginTop};padding:2rem 1.5rem;text-align:center;color:var(--muted);font-size:0.8rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.04em;`}
+            >
+                <div style="max-width:var(--max-w);margin:0 auto;display:flex;flex-wrap:wrap;justify-content:center;gap:1rem;align-items:center;">
+                    <a
+                        href="https://motiu.org"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style="color:var(--muted);text-decoration:none;"
+                    >
+                        Motiu
+                    </a>
+                    <span style="color:var(--border);">·</span>
+                    <a
+                        href="https://www.r3-0.org/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style="color:var(--muted);text-decoration:none;"
+                    >
+                        r3.0
+                    </a>
+                    <span style="color:var(--border);">·</span>
+                    <a
+                        href="mailto:contact@motiu.org"
+                        style="color:var(--muted);text-decoration:none;"
+                    >
+                        contact@motiu.org
+                    </a>
+                </div>
+            </footer>
+        )}
+        <script>
+            // Hamburger nav toggle (mobile only — .nav-toggle/#nav-links.open only do anything below
+            // 767px, see the CSS above). Same open/close pattern (toggle on click, close on outside
+            // click / Escape / picking an option) already used for the Category/Tags popovers in
+            // OrganizationsGallery.astro, duplicated here rather than shared since it's only a few lines
+            // and this file has no other script to extend.
+            const navToggle = document.getElementById("nav-toggle");
+            const navLinks = document.getElementById("nav-links");
 
-      function closeNav() {
-        navLinks?.classList.remove('open');
-        navToggle?.setAttribute('aria-expanded', 'false');
-      }
+            function closeNav() {
+                navLinks?.classList.remove("open");
+                navToggle?.setAttribute("aria-expanded", "false");
+            }
 
-      navToggle?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isOpen = navLinks?.classList.toggle('open');
-        navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-      });
+            navToggle?.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const isOpen = navLinks?.classList.toggle("open");
+                navToggle.setAttribute(
+                    "aria-expanded",
+                    isOpen ? "true" : "false",
+                );
+            });
 
-      // Closing on a nav-link click matters even though it navigates away — without it, the menu
-      // would still be open (visible) for an instant during the page transition, and stays open on
-      // a same-page click (e.g. the already-active link).
-      navLinks?.addEventListener('click', (e) => {
-        if ((e.target as HTMLElement)?.closest('a')) closeNav();
-      });
+            // Closing on a nav-link click matters even though it navigates away — without it, the menu
+            // would still be open (visible) for an instant during the page transition, and stays open on
+            // a same-page click (e.g. the already-active link).
+            navLinks?.addEventListener("click", (e) => {
+                if ((e.target as HTMLElement)?.closest("a")) closeNav();
+            });
 
-      document.addEventListener('click', (e) => {
-        if (!navLinks?.classList.contains('open')) return;
-        const target = e.target as Node;
-        if (navLinks.contains(target) || navToggle?.contains(target)) return;
-        closeNav();
-      });
+            document.addEventListener("click", (e) => {
+                if (!navLinks?.classList.contains("open")) return;
+                const target = e.target as Node;
+                if (navLinks.contains(target) || navToggle?.contains(target))
+                    return;
+                closeNav();
+            });
 
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeNav();
-      });
-    </script>
-  </body>
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape") closeNav();
+            });
+        </script>
+    </body>
 </html>
