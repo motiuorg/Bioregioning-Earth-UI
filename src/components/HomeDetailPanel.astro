@@ -8,144 +8,176 @@
 // The panel shell (position, size, border, header, close/Escape wiring) lives in DetailPanel.astro,
 // shared with OntologyGallery.astro's side panel so the two can't visually drift apart — only
 // the welcome/detail content below is specific to this one.
-import type { NormalizedRecord } from '../lib/notion';
-import OrgDetail from './OrgDetail.astro';
-import Badge from './Badge.astro';
-import DetailPanel from './DetailPanel.astro';
+import type { NormalizedRecord } from "../lib/notion";
+import OrgDetail from "./OrgDetail.astro";
+import Badge from "./Badge.astro";
+import DetailPanel from "./DetailPanel.astro";
 
 export interface Props {
-  records?: Array<{
-    id: string;
-    url?: string;
-    properties: Record<string, any>;
-    sectionRoute?: string;
-  }>;
-  basePath?: string;
-  orgCount?: number;
-  lookups?: {
-    tags?: Map<string, NormalizedRecord>;
-    activities?: Map<string, NormalizedRecord>;
-    sources?: Map<string, NormalizedRecord>;
-    affiliations?: Map<string, NormalizedRecord>;
-  };
-  themes?: NormalizedRecord[];
+    records?: Array<{
+        id: string;
+        url?: string;
+        properties: Record<string, any>;
+        sectionRoute?: string;
+    }>;
+    basePath?: string;
+    orgCount?: number;
+    lookups?: {
+        tags?: Map<string, NormalizedRecord>;
+        activities?: Map<string, NormalizedRecord>;
+        sources?: Map<string, NormalizedRecord>;
+        affiliations?: Map<string, NormalizedRecord>;
+    };
+    themes?: NormalizedRecord[];
 }
-const { records = [], basePath = '/', orgCount = 0, lookups = {}, themes = [] } = Astro.props;
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const {
+    records = [],
+    basePath = "/",
+    orgCount = 0,
+    lookups = {},
+    themes = [],
+} = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const hasLookups = Object.keys(lookups).length > 0;
 const themeCount = themes.length;
 
 const hrefById: Record<string, string> = {};
 for (const r of records) {
-  const slug = r.id.replace(/-/g, '');
-  const pathPrefix = r.sectionRoute ? r.sectionRoute.replace(/\/$/, '') : basePath.replace(/\/$/, '');
-  hrefById[r.id] = `${base}${pathPrefix}/${slug}`;
+    const slug = r.id.replace(/-/g, "");
+    const pathPrefix = r.sectionRoute
+        ? r.sectionRoute.replace(/\/$/, "")
+        : basePath.replace(/\/$/, "");
+    hrefById[r.id] = `${base}${pathPrefix}/${slug}`;
 }
 ---
 
 <DetailPanel panelId="home-panel" position="absolute" initiallyOpen>
-  <div id="panel-welcome">
-    <h1 style="font-size:clamp(1.5rem, 2.5vw, 2rem);font-weight:500;margin:0 0 0.6rem 0;color:var(--fg);letter-spacing:-0.01em;line-height:1.2;">Welcome to Bioregioning Earth</h1>
-    <p style="color:var(--muted);margin:0 0 0.75rem 0;font-size:0.9rem;line-height:1.55;">This is a public knowledge base documenting organizations and practices at the frontier of bioregional work — exploring how communities around the world are learning to live and govern within the logic of place.</p>
-    <p style="color:var(--muted);margin:0 0 0.75rem 0;font-size:0.75rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.04em;">
-      <strong style="color:var(--fg);">{orgCount}</strong> bioregional actors and initiatives currently mapped{themeCount > 0 && <> across <strong style="color:var(--fg);">{themeCount}</strong> themes:</>}
-    </p>
-    {themeCount > 0 && (
-      <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1rem;">
-        {themes.map((theme) => (
-          <Badge shape="square" size="sm" icon={theme.icon} href={`${base}/ontology/${theme.id.replace(/-/g, '')}`}>
-            {String(theme.properties['Name'] ?? theme.properties['Title'] ?? '').replace(/_/g, ' ')}
-          </Badge>
-        ))}
-      </div>
-    )}
-    <a
-      href="https://octagonal-feather-939.notion.site/25321cb4e97c488badc4fa839225b10d?pvs=105"
-      target="_blank"
-      rel="noopener noreferrer"
-      style="display:inline-block;padding:0.6rem 1.2rem;border-radius:0;background:var(--umber);color:var(--paper-50);font-size:0.85rem;text-decoration:none;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.04em;"
-    >
-      Suggest an Entry or Correction →
-    </a>
-  </div>
+    <div id="panel-welcome">
+        <h1 style="font-size:clamp(1.5rem, 2.5vw, 2rem);font-weight:500;margin:0 0 0.6rem 0;color:var(--fg);letter-spacing:-0.01em;line-height:1.2;">
+            Welcome to Bioregioning Earth
+        </h1>
+        <p style="color:var(--muted);margin:0 0 0.75rem 0;font-size:0.9rem;line-height:1.55;">
+            This is a public knowledge base documenting organizations and
+            practices at the frontier of bioregional work — exploring how
+            communities around the world are learning to live and govern within
+            the logic of place.
+        </p>
+        <p style="color:var(--muted);margin:0 0 0.75rem 0;font-size:0.75rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.04em;">
+            <strong style="color:var(--fg);">{orgCount}</strong> bioregional
+            actors and initiatives currently mapped
+            {themeCount > 0 && (
+                <>
+                    {" "}
+                    across{" "}
+                    <strong style="color:var(--fg);">{themeCount}</strong>{" "}
+                    themes:
+                </>
+            )}
+        </p>
+        {themeCount > 0 && (
+            <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1rem;">
+                {themes.map((theme) => (
+                    <Badge
+                        shape="square"
+                        size="sm"
+                        icon={theme.icon}
+                        href={`${base}/ontology/${theme.id.replace(/-/g, "")}`}
+                    >
+                        {String(
+                            theme.properties["Name"] ??
+                                theme.properties["Title"] ??
+                                "",
+                        ).replace(/_/g, " ")}
+                    </Badge>
+                ))}
+            </div>
+        )}
+    </div>
 
-  <div id="panel-detail" style="display:none;"></div>
+    <div id="panel-detail" style="display:none;"></div>
 </DetailPanel>
 
 {hasLookups && (
-  <div style="display:none;">
-    {records.map((r) => (
-      <div id={`home-detail-${r.id}`} class="home-detail-template">
-        <OrgDetail record={r} lookups={lookups} mode="panel" fullPageHref={hrefById[r.id]} />
-      </div>
-    ))}
-  </div>
+    <div style="display:none;">
+        {records.map((r) => (
+            <div id={`home-detail-${r.id}`} class="home-detail-template">
+                <OrgDetail
+                    record={r}
+                    lookups={lookups}
+                    mode="panel"
+                    fullPageHref={hrefById[r.id]}
+                />
+            </div>
+        ))}
+    </div>
 )}
 
 <script define:vars={{ hrefById, hasLookups }}>
-  // define:vars scripts are inline (not bundled by Vite) so they can't `import` — src/lib/viewport.ts's
-  // isMobileViewport is duplicated here instead; keep the 768 threshold in sync with that file.
-  function isMobileViewport() {
-    return window.innerWidth < 768;
-  }
-
-  function initPanel() {
-    const panelEl = document.getElementById('home-panel');
-    if (!panelEl) return;
-    const welcomeDiv = document.getElementById('panel-welcome');
-    const detailDiv = document.getElementById('panel-detail');
-    const viewFullLink = document.getElementById('home-panel-viewfull');
-    const contentDiv = document.getElementById('home-panel-content');
-
-    function open() {
-      panelEl.style.display = 'flex';
-    }
-    function close() {
-      panelEl.style.display = 'none';
-    }
-    function showWelcome() {
-      open();
-      detailDiv.style.display = 'none';
-      welcomeDiv.style.display = 'block';
-      if (viewFullLink) viewFullLink.style.display = 'none';
-      if (contentDiv) contentDiv.scrollTop = 0;
-    }
-    function showDetailById(id, name) {
-      // Mobile: no sidebar at all (DetailPanel.astro forces it hidden via CSS regardless) — go
-      // straight to the item's own page instead. Central to this one function since it's the
-      // shared call path for both the map's marker click (HomeEarthMap.astro) and the gallery's
-      // card click (OrganizationsGallery.astro) on this page.
-      if (isMobileViewport() && hrefById[id]) {
-        window.location.href = hrefById[id];
-        return;
-      }
-      open();
-      welcomeDiv.style.display = 'none';
-      const href = hrefById[id];
-      if (viewFullLink) {
-        if (href) viewFullLink.href = href;
-        viewFullLink.style.display = 'inline-block';
-      }
-      if (hasLookups) {
-        const template = document.getElementById(`home-detail-${id}`);
-        detailDiv.innerHTML = template ? template.innerHTML : '<p style="color:var(--muted);">Detail not available.</p>';
-      } else {
-        detailDiv.innerHTML = `<h2 style="font-size:clamp(1.15rem, 2.5vw, 1.4rem);font-weight:500;margin:0 0 0.6rem 0;color:var(--fg);line-height:1.2;letter-spacing:-0.01em;">${name ?? ''}</h2>`;
-      }
-      detailDiv.style.display = 'block';
-      if (contentDiv) contentDiv.scrollTop = 0;
+    // define:vars scripts are inline (not bundled by Vite) so they can't `import` — src/lib/viewport.ts's
+    // isMobileViewport is duplicated here instead; keep the 768 threshold in sync with that file.
+    function isMobileViewport() {
+        return window.innerWidth < 768;
     }
 
-    // Consumed by HomeEarthMap.astro (marker click/map-empty-click) and OrganizationsGallery.astro
-    // (card click) — both live outside this component and need a shared way to drive the panel
-    // regardless of which view (map/gallery) is currently active.
-    window.__bePanel = { showDetailById, showWelcome, open, close };
-    // Theme badges are now plain links to their /ontology/{slug} page (Badge.astro's own href
-    // prop), no click-wiring needed here anymore.
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initPanel);
-  } else {
-    initPanel();
-  }
+    function initPanel() {
+        const panelEl = document.getElementById("home-panel");
+        if (!panelEl) return;
+        const welcomeDiv = document.getElementById("panel-welcome");
+        const detailDiv = document.getElementById("panel-detail");
+        const viewFullLink = document.getElementById("home-panel-viewfull");
+        const contentDiv = document.getElementById("home-panel-content");
+
+        function open() {
+            panelEl.style.display = "flex";
+        }
+        function close() {
+            panelEl.style.display = "none";
+        }
+        function showWelcome() {
+            open();
+            detailDiv.style.display = "none";
+            welcomeDiv.style.display = "block";
+            if (viewFullLink) viewFullLink.style.display = "none";
+            if (contentDiv) contentDiv.scrollTop = 0;
+        }
+        function showDetailById(id, name) {
+            // Mobile: no sidebar at all (DetailPanel.astro forces it hidden via CSS regardless) — go
+            // straight to the item's own page instead. Central to this one function since it's the
+            // shared call path for both the map's marker click (HomeEarthMap.astro) and the gallery's
+            // card click (OrganizationsGallery.astro) on this page.
+            if (isMobileViewport() && hrefById[id]) {
+                window.location.href = hrefById[id];
+                return;
+            }
+            open();
+            welcomeDiv.style.display = "none";
+            const href = hrefById[id];
+            if (viewFullLink) {
+                if (href) viewFullLink.href = href;
+                viewFullLink.style.display = "inline-block";
+            }
+            if (hasLookups) {
+                const template = document.getElementById(`home-detail-${id}`);
+                detailDiv.innerHTML = template
+                    ? template.innerHTML
+                    : '<p style="color:var(--muted);">Detail not available.</p>';
+            } else {
+                detailDiv.innerHTML = `<h2 style="font-size:clamp(1.15rem, 2.5vw, 1.4rem);font-weight:500;margin:0 0 0.6rem 0;color:var(--fg);line-height:1.2;letter-spacing:-0.01em;">${name ?? ""}</h2>`;
+            }
+            detailDiv.style.display = "block";
+            if (contentDiv) contentDiv.scrollTop = 0;
+        }
+
+        // Consumed by HomeEarthMap.astro (marker click/map-empty-click) and OrganizationsGallery.astro
+        // (card click) — both live outside this component and need a shared way to drive the panel
+        // regardless of which view (map/gallery) is currently active.
+        window.__bePanel = { showDetailById, showWelcome, open, close };
+        // Theme badges are now plain links to their /ontology/{slug} page (Badge.astro's own href
+        // prop), no click-wiring needed here anymore.
+    }
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initPanel);
+    } else {
+        initPanel();
+    }
 </script>
