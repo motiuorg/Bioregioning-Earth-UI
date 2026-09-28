@@ -30,7 +30,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 // "Organizations" link points at `/`, not `/organizations`, so prefix-matching is needed
 // either way, and doing it once here avoids touching ~6 page files for the same result.
 const path = Astro.url.pathname.replace(base, "/").replace(/\/+/g, "/");
-const navItems = [
+type NavItem = {
+    href: string;
+    label: string;
+    match: (p: string) => boolean;
+    external?: boolean;
+};
+const navItems: NavItem[] = [
     {
         href: `${base}/`,
         label: "Organizations",
@@ -55,6 +61,14 @@ const navItems = [
         href: `${base}/about`,
         label: "About",
         match: (p: string) => p.startsWith("/about"),
+    },
+    {
+        // The Notion contribution form, same destination as the homepage sidebar CTA
+        // (HomeDetailPanel.astro) — keep the two links in sync.
+        href: "https://octagonal-feather-939.notion.site/25321cb4e97c488badc4fa839225b10d?pvs=105",
+        label: "How to Contribute",
+        match: () => false,
+        external: true,
     },
 ];
 ---
@@ -82,12 +96,12 @@ const navItems = [
         <style is:global>
             :root {
                 /* ReFi BCN brand resync (2026-08-11) — token names unchanged (everything below
-           threads through inline styles across every component here), values retargeted
-           to match refibcn.github.io's actual live palette
-           (src/styles/themes/editorial-organic.css). This file was still on the original
-           2026-06-02 three-pillar lock; refibcn relocked the pillar ramps and moved
-           --primary off the flow pillar onto a dedicated --terracotta, both on 2026-08-07 —
-           neither change had made it here. */
+              threads through inline styles across every component here), values retargeted
+              to match refibcn.github.io's actual live palette
+              (src/styles/themes/editorial-organic.css). This file was still on the original
+              2026-06-02 three-pillar lock; refibcn relocked the pillar ramps and moved
+              --primary off the flow pillar onto a dedicated --terracotta, both on 2026-08-07 —
+              neither change had made it here. */
                 --paper-50: #fffdfb; /* refibcn's --paper, relocked 2026-08-13 (was #fffffd) — one step lighter/warmer, part of a neutrals-wide relock (paper/bone/ivory) so the warmth ratio increases smoothly across the ramp */
                 --bone: #fcf8f2; /* refibcn's --bone, relocked 2026-08-13 (was #faf8f4) — same relock as --paper-50/--paper-100 */
                 --eggshell: color-mix(
@@ -120,15 +134,15 @@ const navItems = [
                 --pillar-flow-6: #8a2200;
 
                 /* Categorical tones (2026-08-12) — for badges that need color but aren't pillar-tagged
-           (org type/category). Deliberately NOT drawn from the pillar families (lime/cyan/orange)
-           so a category badge never reads as a pillar badge. Same Color Library refibcn.github.io
-           uses, Purple/Pink/Blue families this time, at the same Soft/Dark/Shade steps.
-           -1 (badge background input, via Badge.astro's color-mix) shifted one step lighter —
-           Light instead of Soft — 2026-08-14, matching refibcn's own pillar-badge relock (same
-           day) for the same legibility reason. -4/-6 (badge text/border) are unchanged; only the
-           background step moved, same as refibcn's relock left its "dark" step alone. Referencing
-           --lib-*-2 here instead of a new literal so this stays visibly tied to "one step lighter
-           than -3/Soft" rather than an arbitrary new hex. */
+              (org type/category). Deliberately NOT drawn from the pillar families (lime/cyan/orange)
+              so a category badge never reads as a pillar badge. Same Color Library refibcn.github.io
+              uses, Purple/Pink/Blue families this time, at the same Soft/Dark/Shade steps.
+              -1 (badge background input, via Badge.astro's color-mix) shifted one step lighter —
+              Light instead of Soft — 2026-08-14, matching refibcn's own pillar-badge relock (same
+              day) for the same legibility reason. -4/-6 (badge text/border) are unchanged; only the
+              background step moved, same as refibcn's relock left its "dark" step alone. Referencing
+              --lib-*-2 here instead of a new literal so this stays visibly tied to "one step lighter
+              than -3/Soft" rather than an arbitrary new hex. */
                 --tone-purple-1: var(--lib-purple-2);
                 --tone-purple-4: #750fcc;
                 --tone-purple-6: #3d0870;
@@ -139,19 +153,19 @@ const navItems = [
                 --tone-blue-4: #3a3ac0;
                 --tone-blue-6: #1f1d80;
                 /* Green (2026-08-14) — added as a 4th categorical tone for the ontology page's
-           "Bioregional Economies" category specifically, so it reads distinctly from the
-           Network Coordination pillar badge (which is lime, an adjacent-but-different hue
-           family) instead of both landing in the same "green" family. */
+              "Bioregional Economies" category specifically, so it reads distinctly from the
+              Network Coordination pillar badge (which is lime, an adjacent-but-different hue
+              family) instead of both landing in the same "green" family. */
                 --tone-green-1: var(--lib-green-2);
                 --tone-green-4: #00804a;
                 --tone-green-6: #00502e;
 
                 /* Full Color Library (refibcn.github.io's design-system/colors.astro, 2026-08-07) — 10
-           hue families, 6 fixed steps each (1=Tint … 6=Shade), literal chosen hexes not derived
-           from a tint/shade formula. The --pillar- and --tone- tokens above are a legacy partial
-           port of only 6 of these 10 families at non-sequential step numbers (predating this
-           fuller port, and kept as-is since other code already depends on their exact names) —
-           new code should draw from this instead, since it's the complete set. */
+              hue families, 6 fixed steps each (1=Tint … 6=Shade), literal chosen hexes not derived
+              from a tint/shade formula. The --pillar- and --tone- tokens above are a legacy partial
+              port of only 6 of these 10 families at non-sequential step numbers (predating this
+              fuller port, and kept as-is since other code already depends on their exact names) —
+              new code should draw from this instead, since it's the complete set. */
                 --lib-red-1: #ffe0e0;
                 --lib-red-2: #ffa8a8;
                 --lib-red-3: #ff4d4d;
@@ -214,14 +228,14 @@ const navItems = [
                 --lib-gray-6: #3a3a34;
 
                 /* Map marker glow colors, drawn from the full 10-family library above. Both categories
-           are one uniform color each (not a per-org palette, one glow color for every org
-           regardless of its Type) — standard (non-case-study) markers use the same purple the
-           "Bioregional Organizer" badge uses (--lib-purple-5, identical value to the existing
-           --tone-purple-4) — was blue until 2026-08-14, changed alongside that day's org-type
-           badge reshuffle; case-study markers and the small "Case study" indicator dot
-           (.case-study-dot below) both use yellow — was lime until 2026-08-14, moved off it once
-           the ontology page's Network Coordination pillar badge (also lime) started appearing on
-           the same surfaces, which read as the same color for two unrelated meanings. */
+              are one uniform color each (not a per-org palette, one glow color for every org
+              regardless of its Type) — standard (non-case-study) markers use the same purple the
+              "Bioregional Organizer" badge uses (--lib-purple-5, identical value to the existing
+              --tone-purple-4) — was blue until 2026-08-14, changed alongside that day's org-type
+              badge reshuffle; case-study markers and the small "Case study" indicator dot
+              (.case-study-dot below) both use yellow — was lime until 2026-08-14, moved off it once
+              the ontology page's Network Coordination pillar badge (also lime) started appearing on
+              the same surfaces, which read as the same color for two unrelated meanings. */
                 --map-marker-standard: var(--lib-purple-5);
                 --map-marker-case-study: var(--lib-yellow-3);
 
@@ -267,10 +281,10 @@ const navItems = [
                 --mono:
                     "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace; /* briefly changed to IBM Plex Mono during the 2026-08-11 resync, matching what refibcn.github.io had at the time — refibcn corrected that same day (IBM Plex Mono → Geist Mono), so this reverts to match */
                 /* No --serif token — Averia is ReFi BCN's own display face (refibcn.github.io and other
-           surfaces the org owns), not something client/partner surfaces inherit. This site isn't
-           refibcn-owned, so it doesn't get the display face at all, not even for hero/page-opening
-           headings the way refibcn's own site uses it — those just stay --sans here. See
-           refibcn.github.io's Typography page for the rule this follows. */
+              surfaces the org owns), not something client/partner surfaces inherit. This site isn't
+              refibcn-owned, so it doesn't get the display face at all, not even for hero/page-opening
+              headings the way refibcn's own site uses it — those just stay --sans here. See
+              refibcn.github.io's Typography page for the rule this follows. */
             }
             * {
                 box-sizing: border-box;
@@ -284,9 +298,9 @@ const navItems = [
                 font-family: var(--sans);
                 line-height: 1.55;
                 /* Defense-in-depth against any fixed/min-width element pushing the page wider than the
-           viewport on mobile (the direct cause, a minmax(240px,…) ontology grid with no mobile
-           override, is fixed at its source in OntologyDetail.astro) — this just guarantees a
-           stray future one can't reintroduce page-level horizontal scroll. */
+              viewport on mobile (the direct cause, a minmax(240px,…) ontology grid with no mobile
+              override, is fixed at its source in OntologyDetail.astro) — this just guarantees a
+              stray future one can't reintroduce page-level horizontal scroll. */
                 overflow-x: hidden;
             }
             a {
@@ -302,8 +316,8 @@ const navItems = [
             }
 
             /* Nav active-state (Work Item B) — matches refibcn.github.io's Nav.astro treatment:
-         color shift to umber + a bottom border, no weight change. Active and hover read the
-         same, same as the source-of-truth pattern. */
+            color shift to umber + a bottom border, no weight change. Active and hover read the
+            same, same as the source-of-truth pattern. */
             .nav-link {
                 color: var(--muted);
                 text-decoration: none;
@@ -318,10 +332,10 @@ const navItems = [
             }
 
             /* Shared filter-control pattern (moved here from OrganizationsGallery.astro's scoped
-         style so OntologyDetail.astro's Activities filters can reuse it too — square,
-         umber-toned border, terracotta focus ring, explicit height since <input>/<select>/
-         <button> each resolve padding+line-height to a different intrinsic height under their
-         own UA defaults). */
+            style so OntologyDetail.astro's Activities filters can reuse it too — square,
+            umber-toned border, terracotta focus ring, explicit height since <input>/<select>/
+            <button> each resolve padding+line-height to a different intrinsic height under their
+            own UA defaults). */
             .field-control {
                 height: 2.25rem;
                 box-sizing: border-box;
@@ -341,19 +355,19 @@ const navItems = [
                 border-color: var(--primary);
             }
             /* Hover state (2026-08-14) — every .field-control is clickable (search input aside, which
-         still gets the same treatment for consistency) but none of them changed on hover, so
-         nothing signaled that up front. Deliberately a plain border/background shift, not the
-         --primary treatment — that's reserved for :focus-visible and the "this filter has an
-         active selection" state below, so hover doesn't read as either of those. */
+            still gets the same treatment for consistency) but none of them changed on hover, so
+            nothing signaled that up front. Deliberately a plain border/background shift, not the
+            --primary treatment — that's reserved for :focus-visible and the "this filter has an
+            active selection" state below, so hover doesn't read as either of those. */
             .field-control:hover {
                 border-color: color-mix(in srgb, var(--umber) 55%, transparent);
                 background: var(--eggshell);
             }
             /* "This filter has a selection" state (2026-08-14) — toggled via JS (classList.toggle)
-         alongside the existing count-label / selected-category-label updates in
-         OrganizationsGallery.astro and OntologyDetail.astro, since those already compute exactly
-         this condition. Distinct from :hover/:focus-visible so a filter with something selected
-         stays visually marked even when the pointer moves away. */
+            alongside the existing count-label / selected-category-label updates in
+            OrganizationsGallery.astro and OntologyDetail.astro, since those already compute exactly
+            this condition. Distinct from :hover/:focus-visible so a filter with something selected
+            stays visually marked even when the pointer moves away. */
             .field-control--active {
                 border-color: var(--primary);
                 background: color-mix(
@@ -364,14 +378,14 @@ const navItems = [
                 color: var(--primary);
             }
             /* Trailing dropdown-indicator arrow for .field-control buttons that open a .filter-dropdown
-         (Category/Tags in OrganizationsGallery.astro, Tags/Organizations in OntologyDetail.astro)
-         — added 2026-08-14; these used to have no indicator at all that they were dropdowns
-         rather than plain buttons (the comment on the old native-<select>-replacement said the
-         browser's own arrow chrome couldn't be matched via CSS, but the replacement never added
-         a substitute of its own). Sized up the same day (0.7em read as barely-there next to the
-         0.85rem label text) — 1.1em instead, close to full text size rather than a faint hint of
-         one. Not applied to every .field-control — the search input and "Reset" button use the
-         same class but aren't dropdown triggers. */
+            (Category/Tags in OrganizationsGallery.astro, Tags/Organizations in OntologyDetail.astro)
+            — added 2026-08-14; these used to have no indicator at all that they were dropdowns
+            rather than plain buttons (the comment on the old native-<select>-replacement said the
+            browser's own arrow chrome couldn't be matched via CSS, but the replacement never added
+            a substitute of its own). Sized up the same day (0.7em read as barely-there next to the
+            0.85rem label text) — 1.1em instead, close to full text size rather than a faint hint of
+            one. Not applied to every .field-control — the search input and "Reset" button use the
+            same class but aren't dropdown triggers. */
             .field-control-arrow {
                 margin-left: 0.5rem;
                 font-size: 1.1em;
@@ -384,15 +398,15 @@ const navItems = [
                 top: calc(100% + 0.25rem);
                 left: 0;
                 /* min-width:100% keeps it at least as wide as its trigger button, but the trigger is
-           often just "Tags"/"Organizations" — far narrower than option labels like "Findhorn
-           Watershed Initiative" — so it needs room to grow past that, capped so it doesn't run
-           off-screen. */
+              often just "Tags"/"Organizations" — far narrower than option labels like "Findhorn
+              Watershed Initiative" — so it needs room to grow past that, capped so it doesn't run
+              off-screen. */
                 width: max-content;
                 min-width: 100%;
                 /* Clamped to the viewport (minus roughly a page-padding's worth of margin either side) so
-           this can't overflow off the right edge on very narrow phones (~320-360px) — the plain
-           320px cap alone assumed enough room past the trigger button, which isn't always true
-           there. */
+              this can't overflow off the right edge on very narrow phones (~320-360px) — the plain
+              320px cap alone assumed enough room past the trigger button, which isn't always true
+              there. */
                 max-width: min(320px, calc(100vw - 3rem));
                 z-index: 30;
                 max-height: 280px;
@@ -416,7 +430,7 @@ const navItems = [
                 background: var(--eggshell);
             }
             /* Checked-option highlight (2026-08-14) — a checked box/radio read almost the same as an
-         unchecked one at this size (0.8rem), easy to lose track of once a few are selected. */
+            unchecked one at this size (0.8rem), easy to lose track of once a few are selected. */
             .filter-dropdown-option:has(input:checked) {
                 background: color-mix(in srgb, var(--primary) 10%, transparent);
                 color: var(--primary);
@@ -424,9 +438,9 @@ const navItems = [
             }
 
             /* Hamburger nav toggle — hidden by default (desktop keeps the plain inline nav-links row);
-         shown only below 768px, where #nav-links itself switches from an inline flex row to a
-         hidden dropdown panel that this button opens/closes (script at the bottom of this file).
-         767px matches MOBILE_BREAKPOINT (768) in src/lib/viewport.ts. */
+            shown only below 768px, where #nav-links itself switches from an inline flex row to a
+            hidden dropdown panel that this button opens/closes (script at the bottom of this file).
+            767px matches MOBILE_BREAKPOINT (768) in src/lib/viewport.ts. */
             .nav-toggle {
                 display: none;
                 background: none;
@@ -442,9 +456,9 @@ const navItems = [
                     display: inline-flex;
                 }
                 /* #nav-links carries its desktop layout (display:flex;gap:1.25rem;flex-wrap:wrap;
-           justify-content:flex-end;align-items:center;…) as an inline style attribute, which
-           beats a plain stylesheet rule regardless of specificity — every property this override
-           shares with that inline style needs !important to actually win below 768px. */
+              justify-content:flex-end;align-items:center;…) as an inline style attribute, which
+              beats a plain stylesheet rule regardless of specificity — every property this override
+              shares with that inline style needs !important to actually win below 768px. */
                 #nav-links {
                     display: none !important;
                     position: absolute;
@@ -470,20 +484,20 @@ const navItems = [
                     display: flex !important;
                 }
                 /* The "·" separators only make sense between items sitting in a row (desktop); stacked
-           vertically in the dropdown they just look like stray marks between links. */
+              vertically in the dropdown they just look like stray marks between links. */
                 .nav-sep {
                     display: none;
                 }
             }
 
             /* Glowing LED map marker — shared by EarthMap.astro and HomeEarthMap.astro (via
-         src/lib/mapMarkerStyle.ts's createLedMarkerElement) so the two map components can't
-         drift into two different marker designs the way other shared UI here already has.
-         Color is set per-instance via the --marker-color custom property (standard vs. case-study)
-         rather than two separate classes, so both share this one rule.
-         A solid saturated core with a soft multi-step outward glow — not an off-center white
-         highlight blended into the color (that read as a blemish/pimple rather than a light
-         source; a real LED's brightest point is its own body, not a separate white dot on it). */
+            src/lib/mapMarkerStyle.ts's createLedMarkerElement) so the two map components can't
+            drift into two different marker designs the way other shared UI here already has.
+            Color is set per-instance via the --marker-color custom property (standard vs. case-study)
+            rather than two separate classes, so both share this one rule.
+            A solid saturated core with a soft multi-step outward glow — not an off-center white
+            highlight blended into the color (that read as a blemish/pimple rather than a light
+            source; a real LED's brightest point is its own body, not a separate white dot on it). */
             .map-led-marker {
                 width: 11px;
                 height: 11px;
@@ -501,10 +515,10 @@ const navItems = [
             }
 
             /* Small "this org is a case study" indicator dot — same yellow as the map's case-study
-         markers, so the two read as the same signal wherever they appear (gallery cards, map
-         hover popups, org detail). Deliberately NOT used in filter controls (e.g. the gallery's
-         "Case study only" checkbox) — those are asking a question, not asserting a fact about a
-         specific org, so the dot doesn't belong there. */
+            markers, so the two read as the same signal wherever they appear (gallery cards, map
+            hover popups, org detail). Deliberately NOT used in filter controls (e.g. the gallery's
+            "Case study only" checkbox) — those are asking a question, not asserting a fact about a
+            specific org, so the dot doesn't belong there. */
             .case-study-dot {
                 display: inline-block;
                 width: 6px;
@@ -543,6 +557,12 @@ const navItems = [
                         <>
                             <a
                                 href={item.href}
+                                target={item.external ? "_blank" : undefined}
+                                rel={
+                                    item.external
+                                        ? "noopener noreferrer"
+                                        : undefined
+                                }
                                 class:list={[
                                     "nav-link",
                                     { active: item.match(path) },
