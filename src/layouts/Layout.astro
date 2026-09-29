@@ -35,6 +35,7 @@ type NavItem = {
     label: string;
     match: (p: string) => boolean;
     external?: boolean;
+    cta?: boolean;
 };
 const navItems: NavItem[] = [
     {
@@ -67,6 +68,7 @@ const navItems: NavItem[] = [
         label: "How to Contribute",
         match: () => false,
         external: true,
+        cta: true,
     },
 ];
 ---
@@ -328,6 +330,51 @@ const navItems: NavItem[] = [
                 border-bottom-color: var(--umber);
                 text-decoration: none;
             }
+            /* Contribute is an action, not a section, so it renders as a filled button instead
+            of a text link — same --primary/--primary-fg/--primary-hover tokens as every other
+            primary button on the site so it can't drift from them. The "·" separator before it
+            is suppressed at the render site (a separator between a link row and a button read as
+            connected to neither). */
+            .nav-link--cta {
+                padding: 0.4rem 0.8rem;
+                border-radius: var(--radius);
+                border-bottom-color: transparent;
+                background: var(--primary);
+                color: var(--primary-fg);
+                transition:
+                    background-color 0.15s ease,
+                    color 0.15s ease;
+            }
+            .nav-link--cta:hover {
+                background: var(--primary-hover);
+                color: var(--primary-fg);
+                border-bottom-color: transparent;
+            }
+            /* Landing-page nudge: nav-link--hint is only emitted when path === "/", and pulses a
+            soft halo + slight lighten twice right after load (~1.8s window) so the eye catches
+            it once — pure CSS, no timers/JS, and skipped entirely under prefers-reduced-motion
+            rather than merely slowed down. */
+            @media (prefers-reduced-motion: no-preference) {
+                .nav-link--hint {
+                    animation: nav-cta-hint 0.65s ease-in-out 0.5s 2;
+                }
+            }
+            @keyframes nav-cta-hint {
+                0%,
+                100% {
+                    background-color: var(--primary);
+                    box-shadow: 0 0 0 0 transparent;
+                }
+                50% {
+                    background-color: color-mix(
+                        in srgb,
+                        var(--primary) 85%,
+                        var(--paper-50) 15%
+                    );
+                    box-shadow: 0 0 0 0.35rem
+                        color-mix(in srgb, var(--primary) 22%, transparent);
+                }
+            }
 
             /* Shared filter-control pattern (moved here from OrganizationsGallery.astro's scoped
             style so OntologyDetail.astro's Activities filters can reuse it too — square,
@@ -564,18 +611,24 @@ const navItems: NavItem[] = [
                                 class:list={[
                                     "nav-link",
                                     { active: item.match(path) },
+                                    { "nav-link--cta": item.cta },
+                                    {
+                                        "nav-link--hint":
+                                            item.cta && path === "/",
+                                    },
                                 ]}
                             >
                                 {item.label}
                             </a>
-                            {i < navItems.length - 1 && (
-                                <span
-                                    class="nav-sep"
-                                    style="color:var(--border);font-size:0.9rem;"
-                                >
-                                    ·
-                                </span>
-                            )}
+                            {i < navItems.length - 1 &&
+                                !navItems[i + 1]?.cta && (
+                                    <span
+                                        class="nav-sep"
+                                        style="color:var(--border);font-size:0.9rem;"
+                                    >
+                                        ·
+                                    </span>
+                                )}
                         </>
                     ))}
                 </div>
